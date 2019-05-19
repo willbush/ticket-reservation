@@ -5,7 +5,6 @@ let
   projectDrvEnv = myPackages.project1.env.overrideAttrs (oldAttrs: rec {
     buildInputs = oldAttrs.buildInputs ++ [
       pinnedPkgs.haskellPackages.cabal-install
-      pinnedPkgs.haskellPackages.ghcid
     ];
   });
 in
