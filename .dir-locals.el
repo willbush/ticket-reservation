@@ -5,6 +5,6 @@
   (haskell-mode . (
     (dante-repl-command-line . ("cabal" "new-repl" dante-target "--builddir=dist-newstyle/dante"))))
 
-  ("src" (haskell-mode (dante-target . "ticket-reservation")))
-  ("test" (haskell-mode (dante-target . "unit-tests")))
+  ("src" (haskell-mode (dante-target . "tr-exe")))
+  ("test" (haskell-mode (dante-target . "test-tr")))
 )

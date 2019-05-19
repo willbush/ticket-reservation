@@ -1,10 +1,9 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main where
+module TicketSystem where
 
 import           RIO
-import           Say (say)
 
-main :: IO ()
-main = say "Hello, Haskell!"
+theAnswer :: Int
+theAnswer = 42
