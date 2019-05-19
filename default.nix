@@ -7,7 +7,7 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [ base rio say ];
   executableHaskellDepends = [ base rio say ];
-  testHaskellDepends = [ base hspec QuickCheck rio ];
+  testHaskellDepends = [ base hspec QuickCheck rio say ];
   description = "Toy project implementation of a theater ticket reservation system using CLI";
   license = stdenv.lib.licenses.mit;
 }

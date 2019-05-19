@@ -25,6 +25,7 @@ library
     -Wredundant-constraints
 
 executable tr-exe
+  other-modules: TicketSystem
   main-is:             Main.hs
   build-depends:
       base ^>=4.12.0.0
@@ -41,7 +42,7 @@ executable tr-exe
     -Wpartial-fields
     -Wredundant-constraints
 
-test-suite test-tr
+test-suite tr-test
   type:           exitcode-stdio-1.0
   main-is:        Spec.hs
   hs-source-dirs: test
@@ -49,6 +50,7 @@ test-suite test-tr
   build-depends:
       base ^>=4.12.0.0
     , rio >=0.1.9.2
+    , say >=0.1.0.0
     , QuickCheck
     , hspec
     , ticket-reservation
