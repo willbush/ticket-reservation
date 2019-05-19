@@ -1,0 +1,12 @@
+* Theater Ticket Reservation System
+
+  This project is a toy (goofing off) project for the sake of getting better
+  with Haskell. It's a work in progress.
+
+** Building and Running
+
+   1. Get nix: https://nixos.org/nix/
+   2. Enter a nix shell ~nix-shell --pure~ (pure flag is optional) in the root
+      of this project and GHC, Cabal, and all build dependencies should be
+      loaded automatically.
+   3. Run with ~cabal new-run tr-exe~
