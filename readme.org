@@ -1,7 +1,11 @@
 * Theater Ticket Reservation System
 
   This project is a toy (goofing off) project for the sake of getting better
-  with Haskell. It's a work in progress.
+  with Haskell.
+
+  I lifted the following requirements from an old programming assignment,
+  rewrote it, removed the implementation restrictions, and changed the
+  requirements as I saw fit.
 
 ** Building and Running
 
@@ -9,3 +13,207 @@
    2. Enter a nix shell ~nix-shell~ in the root of this project and GHC, Cabal,
       and all build dependencies should be loaded automatically.
    3. Run with ~cabal new-run tr-exe~
+
+* Requirements
+
+** Summary
+
+   Develop a program to reserve tickets in a single auditorium. Present the user
+   with a command line interface to select seats. Offer best available seats for
+   the number of tickets selected. If the user doesn't want those seats, then
+   they can select the seats they want.
+
+   The initial seating arrangements are read from a file upon starting the
+   program and written back when the user exits. In addition, print a sales
+   report at the end of the program.
+
+** File Input
+
+   The seating arrangement for the auditorium is given via a file.
+
+   1. Use the first argument passed into the ~main~ function as the path to the file.
+   2. If no arguments are provided, fall back on using the relative path to ~A1.txt~.
+
+*** Auditorium File Format Details
+
+    Example file contents:
+
+    #+BEGIN_SRC
+    .AAAAAAAA....AAAAAA.
+    .CCS..CSS.A.AAAA.AC.
+    AAC.SS.ACCC..AACCSS.
+    .ACCSSAACS.S.ASAAAS.
+    .AA.SS.CC....S.A.SSA
+    #+END_SRC
+
+    1. Each line in the file will represent a row in the auditorium.
+
+    2. The number of rows in the auditorium is between 1 and 10 inclusive.
+
+    3. The number of seats in a row is between 1 and 26 inclusive.
+
+    4. The number of seats in each row of the auditorium will be the same.
+
+    5. Each line will have a newline character at the end except the maybe the
+       last.
+
+    6. Reserved seats are represented by the letter (A, C, S) in the
+       file:
+
+       - A: adult
+       - C: child
+       - S: Senior
+
+    7. Unreserved seats are represented by the period character ~.~.
+
+** Ticket Prices
+
+   - Adult : $10.00
+   - Child : $5.00
+   - Senior: $7.50
+
+** Command Line User Interface Logic
+
+   The program must provide a user-friendly menu system for the user. For
+   example:
+
+   #+BEGIN_SRC
+   1. Reserve Seats
+   2. Exit
+   #+END_SRC
+
+   The menu must repeat until the user decides to exit. Imagine this user
+   interface is a ticket kiosk in the lobby of the theater.
+
+   If the user selects to reserve seats, display the current seating
+   availability for that auditorium. An example seating chart is provided below
+   for an auditorium with 5 rows and 20 seats per row.
+
+   - Display each row with its number and each column with its letter.
+
+   - Display a hashtag ~#~ for reserved seats. Don't display the reservation
+     type to the user.
+
+   #+BEGIN_SRC
+     ABCDEFGHIJKLMNOPQRST
+   1 ...##..#####........
+   2 ########....####..##
+   3 .........##.........
+   4 #.#.#.#.#.#.#.#.#.#.
+   5 ########.#####.#####
+   #+END_SRC
+
+   After the seating chart has been displayed, prompt the user for the following
+   information in the order below:
+
+   1. Number of adult tickets
+   2. Number of child tickets
+   3. Number of senior tickets
+
+   - If there are not enough seats available, display an appropriate message
+     with the number of available seats to the user and return to the main menu.
+
+   The reservation system must then offer the best available seats in the
+   auditorium. Prompt the user to enter a ~Y~ to reserve the best available or
+   ~N~ to refuse the best available.
+
+   - If user accepts the best available seats, reserve them, display confirmation
+     message, and return to the main menu.
+
+   - If user declines the best available seats, prompt the user for their
+     selection for each ticket. Repeat the prompt if the given seat is not valid
+     or not available.
+
+** Best Available Seats
+
+   The Best available seats must meet the following requirements:
+
+  - Prefer contiguous seats on the same row, and offer the ones closest to the
+    center of the auditorium.
+
+  - When no contiguous seats exists for the number of requested tickets, simply
+    offer the best seats closest to the center with no preference to same row or
+    adjacency.
+
+  - In the event of a distance tie between rows, use the row with the lowest
+    number.
+
+  - In the event of a distance tie between columns, use the column with the
+    lowest letter.
+
+    For example, if the user wants two tickets, then 2A and 2B are the best
+    available seats.
+
+    #+BEGIN_SRC
+      ABC
+    1 .A.
+    2 ...
+    3 ...
+    #+END_SRC
+
+*** Best Available Hints
+
+   - Think of the distance between 2 points in a Cartesian plain.
+
+** Input Validation
+
+   Validate all user input and repeat the display the prompt until valid input
+   is given. File input does not need to be validated.
+
+** Output
+
+   At the end of the program, write the current status of the auditorium back to
+   the file. Remember to write the auditorium reservations using ~A~, ~C~, ~S~,
+   and ~.~ to identify the type of ticket sold. Also, display a formatted report
+   to the console. Make sure each column lines up properly (no jagged columns).
+   Include the following information in the order given:
+
+   - Total seats in auditorium
+   - Total tickets sold in auditorium
+   - Number of Adult tickets sold in auditorium
+   - Number of Child tickets sold in auditorium
+   - Number of Senior Tickets Sold in auditorium
+   - Total ticket sales: total amount of money collected for tickets in the
+     auditorium
+
+   All values, except total ticket sales will be an integer value. Total ticket
+   sales will be a decimal value rounded to 2 decimal places and formatted with
+   a dollar sign before the first digit of the number.
+
+* Test Scenarios
+
+** Scenario Table Key
+
+   - A = Adult, C = Child, S = Senior
+   - Seat column is the starting seat the user picked.
+   - Best column is blank when the selected seats are available.
+
+** A1 test file
+
+   Note that row numbers and column letters not present in the file.
+
+#+BEGIN_SRC
+  ABCDEFGHIJKLMNOPQRST
+1 .AAAAAAAA....AAAAAA.
+2 .CCS..CSS.A.AAAA.AC.
+3 AAC.SS.ACCC..AACCSS.
+4 .ACCSSAACS.S.ASAAAS.
+5 .AA.SS.CC....S.A.SSA
+#+END_SRC
+
+*** Scenario 1
+
+    | Action  | seat | A | C | S | Best  | Accept |
+    |---------+------+---+---+---+-------+--------|
+    | Exit    |      |   |   |   |       |        |
+
+    *Expected report:*
+
+    | Report Type   | Expected |
+    |---------------+----------|
+    | Total Seats   |      100 |
+    | Total Tickets |       69 |
+    | Adult         |       36 |
+    | Child         |       15 |
+    | Senior        |       18 |
+    | Total Sales   |  $570.00 |
