@@ -3,11 +3,12 @@
 
 module Main where
 
+import qualified Formatting         as F
 import           RIO
 import qualified RIO.List           as L
 import qualified RIO.Map            as Map
 import qualified RIO.Text           as T
-import           Say                (say, sayString)
+import           Say                (say, sayShow)
 import           System.Environment (getArgs)
 import           System.IO          (getLine)
 import           TicketSystem
@@ -22,14 +23,24 @@ main = do
 
 runMainLoop :: Auditorium -> IO ()
 runMainLoop a = do
-  num <- promptUntilValid mainPrompt (\n -> n == 1 || n == 2) :: IO Int
+  let promptFor1Or2 prompt =
+        promptUntilValid prompt (\n -> n == 1 || n == 2) :: IO Int
+  num <- promptFor1Or2 mainPrompt
   case num of
     1 -> do
       say $ mapToText a
       tickets <- promptForTickets
       let best = findBest (L.length tickets) $ Map.toList $ auditoriumMap a
-      sayString $ show best
-      -- TODO prompt user if they want the seats, and if not prompt for seats.
+          prompt =
+            mconcat
+              [ "1. Take seats closet to the center: "
+              , T.pack $ show $ fmap (fmtRowCol . fst) best
+              , "\n"
+              , "2. Select your seats\n"
+              ]
+      response <- promptFor1Or2 prompt
+      sayShow response
+      -- TODO case on response
       runMainLoop a
     _ -> say "Thanks come again!"
 
@@ -57,10 +68,31 @@ mainPrompt :: Text
 mainPrompt = "1. Reserve Seats\n2. Exit\n"
 
 numOfAdultsPrompt :: Text
-numOfAdultsPrompt = "How many adult tickets:";
+numOfAdultsPrompt =
+  F.sformat
+    ("How many adult tickets ($" F.% F.fixed 2 F.% " per ticket):")
+    adultPrice
 
 numOfChildrenPrompt :: Text
-numOfChildrenPrompt = "How many child tickets:";
+numOfChildrenPrompt =
+  F.sformat
+    ("How many child tickets ($" F.% F.fixed 2 F.% " per ticket):")
+    childPrice
 
 numOfSeniorsPrompt :: Text
-numOfSeniorsPrompt = "How many senior tickets:";
+numOfSeniorsPrompt =
+  F.sformat
+    ("How many senior tickets ($" F.% F.fixed 2 F.% " per ticket):")
+    seniorPrice
+
+fmtRowCol :: RowCol -> Text
+fmtRowCol (row, col) = F.sformat (F.int F.% F.char) row col
+
+adultPrice :: Double
+adultPrice = 10.0;
+
+childPrice :: Double
+childPrice = 5.0;
+
+seniorPrice :: Double
+seniorPrice = 7.5;
