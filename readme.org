@@ -128,6 +128,8 @@
 
    The Best available seats must meet the following requirements:
 
+  - The best seats are selected from the *entire auditorium*.
+
   - Prefer contiguous seats on the same row, and offer the ones closest to the
     center of the auditorium.
 
