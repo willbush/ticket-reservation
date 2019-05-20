@@ -24,8 +24,7 @@
    they can select the seats they want.
 
    The initial seating arrangements are read from a file upon starting the
-   program and written back when the user exits. In addition, print a sales
-   report at the end of the program.
+   program. Print a sales report when the user exits.
 
 ** File Input
 
@@ -164,11 +163,9 @@
 
 ** Output
 
-   At the end of the program, write the current status of the auditorium back to
-   the file. Remember to write the auditorium reservations using ~A~, ~C~, ~S~,
-   and ~.~ to identify the type of ticket sold. Also, display a formatted report
-   to the console. Make sure each column lines up properly (no jagged columns).
-   Include the following information in the order given:
+   When the user exits display a formatted report to the console. Make sure each
+   column lines up properly (no jagged columns). Include the following
+   information in the order given:
 
    - Total seats in auditorium
    - Total tickets sold in auditorium
@@ -181,6 +178,8 @@
    All values, except total ticket sales will be an integer value. Total ticket
    sales will be a decimal value rounded to 2 decimal places and formatted with
    a dollar sign before the first digit of the number.
+
+   Don't bother persisting the auditorium changes back to the original file.
 
 * Test Scenarios
 
