@@ -5,6 +5,7 @@ module TicketSystem
   ( mkAuditorium
   , mapToText
   , findBest
+  , toTicket
   )
 where
 

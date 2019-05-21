@@ -8,7 +8,7 @@ import           RIO
 import qualified RIO.List           as L
 import qualified RIO.Map            as Map
 import qualified RIO.Text           as T
-import           Say                (say, sayShow)
+import           Say                (say)
 import           System.Environment (getArgs)
 import           System.IO          (getLine)
 import           TicketSystem
@@ -22,15 +22,16 @@ main = do
   runMainLoop $ mkAuditorium ls
 
 runMainLoop :: Auditorium -> IO ()
-runMainLoop a = do
+runMainLoop auditorium = do
   let promptFor1Or2 prompt =
         promptUntilValid prompt (\n -> n == 1 || n == 2) :: IO Int
   num <- promptFor1Or2 mainPrompt
   case num of
     1 -> do
-      say $ mapToText a
+      say $ mapToText auditorium
       tickets <- promptForTickets
-      let best = findBest (L.length tickets) $ Map.toList $ auditoriumMap a
+      let map' = auditoriumMap auditorium
+          best = findBest (L.length tickets) $ Map.toList map'
           prompt =
             mconcat
               [ "1. Take seats closet to the center: "
@@ -39,9 +40,22 @@ runMainLoop a = do
               , "2. Select your seats\n"
               ]
       response <- promptFor1Or2 prompt
-      sayShow response
-      -- TODO case on response
-      runMainLoop a
+      case response of
+        1 -> do
+          -- Reserve the best seats.
+          let bestReserved =
+                L.zipWith
+                  (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
+                  tickets
+                  best
+          runMainLoop $
+            auditorium
+              { auditoriumMap =
+                  foldl' (\m (k, v) -> Map.insert k v m) map' bestReserved
+              }
+        _ -> do
+          say "todo"
+          runMainLoop auditorium
     _ -> say "Thanks come again!"
 
 promptUntilValid :: (Read a) => Text -> (a -> Bool) -> IO a
