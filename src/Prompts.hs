@@ -3,7 +3,7 @@
 
 module Prompts where
 
-import qualified Formatting as F
+import           Formatting (char, fixed, int, sformat, (%))
 import           RIO
 import qualified RIO.Text   as T
 import           Types
@@ -22,36 +22,29 @@ seatPrompt seats =
 
 numOfAdultsPrompt :: Text
 numOfAdultsPrompt =
-  F.sformat
-    ("How many adult tickets ($" F.% F.fixed 2 F.% " per ticket):")
-    adultPrice
+  sformat ("How many adult tickets ($" % fixed 2 % " per ticket):") adultPrice
 
 numOfChildrenPrompt :: Text
 numOfChildrenPrompt =
-  F.sformat
-    ("How many child tickets ($" F.% F.fixed 2 F.% " per ticket):")
-    childPrice
+  sformat ("How many child tickets ($" % fixed 2 % " per ticket):") childPrice
 
 numOfSeniorsPrompt :: Text
 numOfSeniorsPrompt =
-  F.sformat
-    ("How many senior tickets ($" F.% F.fixed 2 F.% " per ticket):")
-    seniorPrice
+  sformat ("How many senior tickets ($" % fixed 2 % " per ticket):") seniorPrice
 
 seatSelectionPrompt :: Int -> Text
 seatSelectionPrompt =
-  F.sformat
-    ("Please enter your seat selection (e.g. 1A) for ticket # " F.% F.int F.%
-     ".")
+  sformat
+    ("Please enter your seat selection (e.g. 1A) for ticket # " % int % ".")
 
 fmtRowCol :: RowCol -> Text
-fmtRowCol (row, col) = F.sformat (F.int F.% F.char) row col
+fmtRowCol (row, col) = sformat (int % char) row col
 
 adultPrice :: Double
-adultPrice = 10.0;
+adultPrice = 10.0
 
 childPrice :: Double
-childPrice = 5.0;
+childPrice = 5.0
 
 seniorPrice :: Double
-seniorPrice = 7.5;
+seniorPrice = 7.5
