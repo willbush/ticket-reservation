@@ -60,7 +60,7 @@ reserveSeats auditorium = do
             _ -> do
               selections <-
                 mapM
-                  (promptUntilValid' parseRowCol (`Map.member` map') . seatSelectionPrompt)
+                  (promptForSeat map' . seatSelectionPrompt)
                   [1 .. ticketCount]
               say "Purchase complete."
               pure $
@@ -72,36 +72,50 @@ reserveSeats auditorium = do
                        Map.lookup rowCol map' >>= (\seat -> Just (rowCol, seat)))
                     selections
 
-parseRowCol :: String -> RowCol
-parseRowCol [rowChar, col] =
-  case readMaybe [rowChar] of
-    Just row -> (row, C.toUpper col)
-    Nothing  -> (0, '?')
-parseRowCol _ = (0, '?')
-
 promptForTickets :: IO String
 promptForTickets = do
-  numOfAdults   <- promptUntilValid (>= 0) numOfAdultsPrompt   :: IO Int
-  numOfChildren <- promptUntilValid (>= 0) numOfChildrenPrompt :: IO Int
-  numOfSeniors  <- promptUntilValid (>= 0) numOfSeniorsPrompt  :: IO Int
+  numOfAdults   <- promptForGreaterOrEqToZero numOfAdultsPrompt
+  numOfChildren <- promptForGreaterOrEqToZero numOfChildrenPrompt
+  numOfSeniors  <- promptForGreaterOrEqToZero numOfSeniorsPrompt
   pure $
     L.replicate numOfAdults   'A' <>
     L.replicate numOfChildren 'C' <>
     L.replicate numOfSeniors  'S'
 
+promptForSeat :: Map RowCol Seat -> Text -> IO RowCol
+promptForSeat map' = promptUntilValid parse
+  where
+    parse [rowChar, col] =
+      case readMaybe [rowChar] of
+        Just row
+          | Map.member (row, upperCaseRow) map' -> Just (row, upperCaseRow)
+        _ -> Nothing
+      where
+        upperCaseRow = C.toUpper col
+    parse _ = Nothing
+
+promptForGreaterOrEqToZero :: Text -> IO Int
+promptForGreaterOrEqToZero = promptUntilValid parse
+  where
+    parse s =
+      case readMaybe s of
+        Just n | n >= 0 -> Just n
+        _               -> Nothing
+
 promptFor1Or2 :: Text -> IO Int
-promptFor1Or2 prompt =
-  promptUntilValid (\n -> n == 1 || n == 2) prompt :: IO Int
+promptFor1Or2 = promptUntilValid parse
+  where
+    parse s =
+      case readMaybe s of
+        Just n | n == 1 || n == 2 -> Just n
+        _                         -> Nothing
 
-promptUntilValid :: (Read a) => (a -> Bool) -> Text -> IO a
-promptUntilValid = promptUntilValid' id
-
-promptUntilValid' :: (Read a) => (a -> b) -> (b -> Bool) -> Text -> IO b
-promptUntilValid' parse isValid prompt = do
+promptUntilValid :: (String -> Maybe a) -> Text -> IO a
+promptUntilValid parse prompt = do
   say prompt
   line <- getLine
-  case parse <$> readMaybe line of
-    Just v | isValid v -> pure v
+  case parse line of
+    Just v -> pure v
     _ -> do
       say "Invalid input."
-      promptUntilValid' parse isValid prompt
+      promptUntilValid parse prompt
