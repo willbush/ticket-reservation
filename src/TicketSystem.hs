@@ -6,6 +6,7 @@ module TicketSystem
   , mapToText
   , findBest
   , toTicket
+  , insertSeats
   )
 where
 
@@ -178,3 +179,8 @@ findBest n seats = L.sortOn fst $
         EQ -> compare rc1 rc2
         LT -> LT
         GT -> GT
+
+insertSeats :: Auditorium -> [(RowCol, Seat)] -> Auditorium
+insertSeats a seats =
+  let map' = auditoriumMap a
+   in a {auditoriumMap = foldl' (\m (k, v) -> Map.insert k v m) map' seats}
