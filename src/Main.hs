@@ -28,7 +28,6 @@ runMainLoop auditorium = do
   case reserveOrExit of
     1 -> do
       seats <- reserveSeats auditorium
-      say "Purchase complete.\n"
       runMainLoop $ insertSeats auditorium seats
     _ -> say "Thanks come again!"
 
@@ -36,29 +35,42 @@ reserveSeats :: Auditorium -> IO [(RowCol, Seat)]
 reserveSeats auditorium = do
   say $ mapToText auditorium
   tickets <- promptForTickets
-  let ticketCount = L.length tickets
-      map' = auditoriumMap auditorium
-      best = findBest ticketCount $ Map.toList map'
-  takeBestOrSelect <- promptFor1Or2 $ seatPrompt best
-  case takeBestOrSelect of
-    1 ->
-      pure $
-      L.zipWith
-        (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
-        tickets
-        best
-    _ -> do
-      selections <-
-        mapM
-          (promptUntilValid' parseRowCol (`Map.member` map') . seatSelectionPrompt)
-          [1 .. ticketCount]
-      pure $
-        L.zipWith
-          (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
-          tickets $
-          mapMaybe
-            (\rowCol -> Map.lookup rowCol map' >>= (\seat -> Just (rowCol, seat)))
-            selections
+  if null tickets
+    then do
+      say "No tickets purchased."
+      pure []
+    else do
+      let ticketCount = L.length tickets
+          map' = auditoriumMap auditorium
+          best = findBest ticketCount $ Map.toList map'
+      if null best
+        then do
+          say "Not enough seats available."
+          pure []
+        else do
+          takeBestOrSelect <- promptFor1Or2 $ seatPrompt best
+          case takeBestOrSelect of
+            1 -> do
+              say "Purchase complete."
+              pure $
+                L.zipWith
+                  (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
+                  tickets
+                  best
+            _ -> do
+              selections <-
+                mapM
+                  (promptUntilValid' parseRowCol (`Map.member` map') . seatSelectionPrompt)
+                  [1 .. ticketCount]
+              say "Purchase complete."
+              pure $
+                L.zipWith
+                  (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
+                  tickets $
+                  mapMaybe
+                    (\rowCol ->
+                       Map.lookup rowCol map' >>= (\seat -> Just (rowCol, seat)))
+                    selections
 
 parseRowCol :: String -> RowCol
 parseRowCol [rowChar, col] =
@@ -66,6 +78,16 @@ parseRowCol [rowChar, col] =
     Just row -> (row, C.toUpper col)
     Nothing  -> (0, '?')
 parseRowCol _ = (0, '?')
+
+promptForTickets :: IO String
+promptForTickets = do
+  numOfAdults   <- promptUntilValid (>= 0) numOfAdultsPrompt   :: IO Int
+  numOfChildren <- promptUntilValid (>= 0) numOfChildrenPrompt :: IO Int
+  numOfSeniors  <- promptUntilValid (>= 0) numOfSeniorsPrompt  :: IO Int
+  pure $
+    L.replicate numOfAdults   'A' <>
+    L.replicate numOfChildren 'C' <>
+    L.replicate numOfSeniors  'S'
 
 promptFor1Or2 :: Text -> IO Int
 promptFor1Or2 prompt =
@@ -83,13 +105,3 @@ promptUntilValid' parse isValid prompt = do
     _ -> do
       say "Invalid input."
       promptUntilValid' parse isValid prompt
-
-promptForTickets :: IO String
-promptForTickets = do
-  numOfAdults   <- promptUntilValid (>= 0) numOfAdultsPrompt   :: IO Int
-  numOfChildren <- promptUntilValid (>= 0) numOfChildrenPrompt :: IO Int
-  numOfSeniors  <- promptUntilValid (>= 0) numOfSeniorsPrompt  :: IO Int
-  pure $
-    L.replicate numOfAdults   'A' <>
-    L.replicate numOfChildren 'C' <>
-    L.replicate numOfSeniors  'S'

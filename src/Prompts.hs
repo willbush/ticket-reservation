@@ -9,7 +9,7 @@ import qualified RIO.Text   as T
 import           Types
 
 mainPrompt :: Text
-mainPrompt = "1. Reserve Seats\n2. Exit\n"
+mainPrompt = "\n1. Reserve Seats\n2. Exit\n"
 
 seatPrompt :: [(RowCol, Seat)] -> Text
 seatPrompt seats =
