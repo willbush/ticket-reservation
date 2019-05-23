@@ -7,6 +7,10 @@
   rewrote it, removed the implementation restrictions, and changed the
   requirements as I saw fit.
 
+  The interesting part in doing this project is implementing the algorithm to
+  find the best seats in the auditorium. It searches for available seats in the
+  entire auditorium closes to the center and prefers contiguous seats.
+
 ** Building and Running
 
    1. Get nix: https://nixos.org/nix/
@@ -113,15 +117,20 @@
      with the number of available seats to the user and return to the main menu.
 
    The reservation system must then offer the best available seats in the
-   auditorium. Prompt the user to enter a ~Y~ to reserve the best available or
-   ~N~ to refuse the best available.
+   auditorium. Prompt the user to reserve the best available or select their own
+   seats
 
-   - If user accepts the best available seats, reserve them, display confirmation
-     message, and return to the main menu.
+   - If user accepts the best available seats, reserve them, display
+     confirmation message.
 
-   - If user declines the best available seats, prompt the user for their
+   - If user wants to select their own seats, prompt the user for their
      selection for each ticket. Repeat the prompt if the given seat is not valid
      or not available.
+
+
+   Before returning to the main menu, display a confirmation message with the
+   total purchase price and pretty print the ticket (row and column) they
+   purchased.
 
 ** Best Available Seats
 
