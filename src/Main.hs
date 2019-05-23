@@ -35,6 +35,7 @@ reserveSeats :: Auditorium -> IO [(RowCol, Seat)]
 reserveSeats auditorium = do
   say $ mapToText auditorium
   tickets <- promptForTickets
+  let purchaseTotal = sum $ toTicketPrice . toTicket <$> tickets
   if null tickets
     then do
       say "No tickets purchased."
@@ -48,39 +49,11 @@ reserveSeats auditorium = do
           say "Not enough seats available."
           pure []
         else do
-          let purchaseTotal =
-                foldl'
-                  (\sum' t -> sum' + (toTicketPrice . toTicket) t)
-                  0
-                  tickets
-              formattedBest = fmtRowCols $ fst <$> best
-          takeBestOrSelect <- promptFor1Or2 $ seatPrompt formattedBest
-          case takeBestOrSelect of
-            1 -> do
-              say "Purchase complete."
-              say $ "Seats purchased: " <> formattedBest
-              say $ "Purchase total: " <> fmtUSD purchaseTotal
-              pure $
-                L.zipWith
-                  (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
-                  tickets
-                  best
-            _ -> do
-              selections <-
-                mapM
-                  (promptForSeat map' . seatSelectionPrompt)
-                  [1 .. ticketCount]
-              say "Purchase complete."
-              say $ "Seats purchased: " <> fmtRowCols selections
-              say $ "Purchase total: " <> fmtUSD purchaseTotal
-              pure $
-                L.zipWith
-                  (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
-                  tickets $
-                mapMaybe
-                  (\rowCol ->
-                     Map.lookup rowCol map' >>= (\seat -> Just (rowCol, seat)))
-                  selections
+          purchasedSeats <- promptForSeats map' tickets best
+          say "Purchase complete."
+          say $ "Seats purchased: " <> fmtRowCols (fst <$> purchasedSeats)
+          say $ "Purchase total: " <> fmtUSD purchaseTotal
+          pure purchasedSeats
 
 promptForTickets :: IO String
 promptForTickets = do
@@ -91,6 +64,37 @@ promptForTickets = do
     L.replicate numOfAdults   'A' <>
     L.replicate numOfChildren 'C' <>
     L.replicate numOfSeniors  'S'
+
+promptForGreaterOrEqToZero :: Text -> IO Int
+promptForGreaterOrEqToZero = promptUntilValid parse
+  where
+    parse s =
+      case readMaybe s of
+        Just n | n >= 0 -> Just n
+        _               -> Nothing
+
+promptForSeats :: Map RowCol Seat -> String -> [(RowCol, Seat)] -> IO [(RowCol, Seat)]
+promptForSeats map' tickets best = do
+  let formattedBest = fmtRowCols $ fst <$> best
+      ticketCount = L.length tickets
+  takeBestOrSelect <- promptFor1Or2 $ seatPrompt formattedBest
+  case takeBestOrSelect of
+    1 ->
+      pure $
+      L.zipWith
+        (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
+        tickets
+        best
+    _ -> do
+      selections <-
+        mapM (promptForSeat map' . seatSelectionPrompt) [1 .. ticketCount]
+      pure $
+        L.zipWith
+          (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
+          tickets $
+        mapMaybe
+          (\rowCol -> Map.lookup rowCol map' >>= (\seat -> Just (rowCol, seat)))
+          selections
 
 promptForSeat :: Map RowCol Seat -> Text -> IO RowCol
 promptForSeat map' = promptUntilValid parse
@@ -106,14 +110,6 @@ promptForSeat map' = promptUntilValid parse
       where
         upperCol = C.toUpper col
     parse _ = Nothing
-
-promptForGreaterOrEqToZero :: Text -> IO Int
-promptForGreaterOrEqToZero = promptUntilValid parse
-  where
-    parse s =
-      case readMaybe s of
-        Just n | n >= 0 -> Just n
-        _               -> Nothing
 
 promptFor1Or2 :: Text -> IO Int
 promptFor1Or2 = promptUntilValid parse
