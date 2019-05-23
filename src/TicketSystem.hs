@@ -2,23 +2,39 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module TicketSystem
-  ( mkAuditorium
-  , mapToText
+  ( adultPrice
+  , childPrice
   , findBest
-  , toTicket
+  , fmtRowCol
+  , fmtRowCols
+  , fmtUSD
   , insertSeats
   , isAvailable
-  )
-where
+  , mapToText
+  , mkAuditorium
+  , seniorPrice
+  , toTicket
+  , toTicketPrice
+  ) where
 
 import qualified Data.List.Extra as E
 import           Data.List.Split (divvy)
+import           Formatting      (char, fixed, int, sformat, (%))
 import           Prelude         (pred, succ)
 import           RIO
 import qualified RIO.List        as L
 import qualified RIO.Map         as Map
 import qualified RIO.Text        as T
 import           Types
+
+adultPrice :: Double
+adultPrice = 10.0
+
+childPrice :: Double
+childPrice = 5.0
+
+seniorPrice :: Double
+seniorPrice = 7.5
 
 -- | Makes an auditorium form a list of text where each text entry is a row of
 -- seats.
@@ -61,6 +77,12 @@ toTicket 'A' = Adult
 toTicket 'C' = Child
 toTicket 'S' = Senior
 toTicket _   = Unreserved
+
+toTicketPrice :: Ticket -> Double
+toTicketPrice Adult  = adultPrice
+toTicketPrice Child  = childPrice
+toTicketPrice Senior = seniorPrice
+toTicketPrice _      = 0
 
 distance :: XYPoint -> XYPoint -> Double
 distance (x1, y1) (x2, y2) = sqrt $ (x2 - x1) ** 2 + (y2 - y1) ** 2
@@ -189,3 +211,12 @@ insertSeats a seats =
 isAvailable :: Seat -> Bool
 isAvailable (Seat Unreserved _ ) = True
 isAvailable _                    = False
+
+fmtRowCols :: [RowCol] -> Text
+fmtRowCols seats = T.pack $ show $ fmap fmtRowCol seats
+
+fmtRowCol :: RowCol -> Text
+fmtRowCol (row, col) = sformat (int % char) row col
+
+fmtUSD :: Double -> Text
+fmtUSD = sformat ("$" % fixed 2)

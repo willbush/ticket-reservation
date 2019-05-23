@@ -48,10 +48,18 @@ reserveSeats auditorium = do
           say "Not enough seats available."
           pure []
         else do
-          takeBestOrSelect <- promptFor1Or2 $ seatPrompt best
+          let purchaseTotal =
+                foldl'
+                  (\sum' t -> sum' + (toTicketPrice . toTicket) t)
+                  0
+                  tickets
+              formattedBest = fmtRowCols $ fst <$> best
+          takeBestOrSelect <- promptFor1Or2 $ seatPrompt formattedBest
           case takeBestOrSelect of
             1 -> do
               say "Purchase complete."
+              say $ "Seats purchased: " <> formattedBest
+              say $ "Purchase total: " <> fmtUSD purchaseTotal
               pure $
                 L.zipWith
                   (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
@@ -63,14 +71,16 @@ reserveSeats auditorium = do
                   (promptForSeat map' . seatSelectionPrompt)
                   [1 .. ticketCount]
               say "Purchase complete."
+              say $ "Seats purchased: " <> fmtRowCols selections
+              say $ "Purchase total: " <> fmtUSD purchaseTotal
               pure $
                 L.zipWith
                   (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
                   tickets $
-                  mapMaybe
-                    (\rowCol ->
-                       Map.lookup rowCol map' >>= (\seat -> Just (rowCol, seat)))
-                    selections
+                mapMaybe
+                  (\rowCol ->
+                     Map.lookup rowCol map' >>= (\seat -> Just (rowCol, seat)))
+                  selections
 
 promptForTickets :: IO String
 promptForTickets = do
