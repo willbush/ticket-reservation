@@ -87,11 +87,14 @@ promptForSeat map' = promptUntilValid parse
   where
     parse [rowChar, col] =
       case readMaybe [rowChar] of
-        Just row
-          | Map.member (row, upperCaseRow) map' -> Just (row, upperCaseRow)
+        Just row -> do
+          let rowCol = (row, upperCol)
+          case Map.lookup rowCol map' of
+            Just seat | isAvailable seat -> Just rowCol
+            _                            -> Nothing
         _ -> Nothing
       where
-        upperCaseRow = C.toUpper col
+        upperCol = C.toUpper col
     parse _ = Nothing
 
 promptForGreaterOrEqToZero :: Text -> IO Int

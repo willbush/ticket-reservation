@@ -7,6 +7,7 @@ module TicketSystem
   , findBest
   , toTicket
   , insertSeats
+  , isAvailable
   )
 where
 
@@ -184,3 +185,7 @@ insertSeats :: Auditorium -> [(RowCol, Seat)] -> Auditorium
 insertSeats a seats =
   let map' = auditoriumMap a
    in a {auditoriumMap = foldl' (\m (k, v) -> Map.insert k v m) map' seats}
+
+isAvailable :: Seat -> Bool
+isAvailable (Seat Unreserved _ ) = True
+isAvailable _                    = False
