@@ -227,3 +227,114 @@
     | Child         |       15 |
     | Senior        |       18 |
     | Total Sales   |  $570.00 |
+
+*** Scenario 2
+
+    | Action  | A | C | S | Best  | Accept | select seat(s) |
+    |---------+---+---+---+-------+--------+----------------|
+    | Reserve | 1 |   |   | 2J    | N      | 1A             |
+    | Reserve | 1 | 1 |   | 3L-3M | Y      |                |
+    | Reserve |   |   | 1 | 2J    | Y      |                |
+    | Reserve | 2 |   |   | 1J-1K | N      | 4S             |
+    | Reserve | 1 | 2 |   | 1J-1L | N      | 1K-1M          |
+    | Reserve | 1 |   |   | 4K    | Y      |                |
+    | Exit    |   |   |   |       |        |                |
+
+    *Expected report:*
+
+    | Report Type   | Expected |
+    |---------------+----------|
+    | Total Seats   |      100 |
+    | Total Tickets |       77 |
+    | Adult         |       40 |
+    | Child         |       18 |
+    | Senior        |       19 |
+    | Total Sales   |  $632.50 |
+
+** A2 test file
+
+   Row numbers and column letters not present in the file.
+
+#+BEGIN_SRC
+  ABCDEFGHIJKLMNO
+1 S..A.A.CC....S.
+2 ACAS..ACS.A.AS.
+3 S.S..A..AC..AA.
+4 .SS.AA..CCS..S.
+5 .AC.AS.AA....A.
+#+END_SRC
+
+*** Scenario 1
+
+    | Action  | A | C | S | Best  | Accept | select seat(s) |
+    |---------+---+---+---+-------+--------+----------------|
+    | Reserve | 2 |   |   | 3G-3H | Y      |                |
+    | Reserve |   | 2 |   | 4G-4H | Y      |                |
+    | Reserve |   |   | 2 | 2E-2F | Y      |                |
+    | Reserve | 1 | 1 | 1 | 1J-1L | Y      |                |
+    | Reserve |   | 1 | 1 | 5J-5K | N      | 5K-5L          |
+    | Exit    |   |   |   |       |        |                |
+
+    *Expected report:*
+
+    | Report Type   | Expected |
+    |---------------+----------|
+    | Total Seats   |       75 |
+    | Total Tickets |       49 |
+    | Adult         |       21 |
+    | Child         |       12 |
+    | Senior        |       16 |
+    | Total Sales   |  $390.00 |
+
+** A3 test file
+
+   Row numbers and column letters not present in the file.
+
+#+BEGIN_SRC
+  ABCDEFGHIJKLMNOPQRSTUVWXYZ
+1 .AAA.A..A....AA.AA.A.AA...
+2 C..C..CCC.C.C..C..CCC....C
+3 SSS.SS.SS...S..S.SSSSSSSSS
+#+END_SRC
+
+*** Scenario 1
+
+    | Action  | A | C | S | Best  | Accept |
+    |---------+---+---+---+-------+--------|
+    | Reserve | 2 | 1 |   | 1K-1M | Y      |
+    | Reserve |   | 2 | 1 | 3J-3L | Y      |
+    | Reserve | 1 |   | 2 | 2V-2X | Y      |
+    | Reserve | 2 |   | 1 | 1X-1Z | Y      |
+    | Exit    |   |   |   |       |        |
+
+    *Expected report:*
+
+    | Report Type   | Expected |
+    |---------------+----------|
+    | Total Seats   |       78 |
+    | Total Tickets |       54 |
+    | Adult         |       17 |
+    | Child         |       15 |
+    | Senior        |       22 |
+    | Total Sales   |  $410.00 |
+
+*** Scenario 2
+
+    | Action  | A | C | S | Best              | Accept |
+    |---------+---+---+---+-------------------+--------|
+    | Reserve | 2 | 2 | 2 | 1L 1M 2L 2N 2O 3N | Y      |
+    | Reserve | 2 | 2 | 2 | 1K 1P 2J 3K 3L 3O | Y      |
+    | Reserve | 2 | 2 | 2 | 1H 1J 2Q 2R 3J 3Q | Y      |
+    | Reserve | 0 | 0 | 0 | no tickets        | Y      |
+    | Exit    |   |   |   |                   |        |
+
+    *Expected report:*
+
+    | Report Type   | Expected |
+    |---------------+----------|
+    | Total Seats   |       78 |
+    | Total Tickets |       60 |
+    | Adult         |       18 |
+    | Child         |       18 |
+    | Senior        |       24 |
+    | Total Sales   |  $450.00 |
