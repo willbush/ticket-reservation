@@ -3,6 +3,7 @@
 
 module Main where
 
+import           Formatting         (int, sformat, stext, (%))
 import           Prompts
 import           RIO
 import qualified RIO.Char           as C
@@ -20,16 +21,19 @@ main = do
   args <- getArgs
   let path = fromMaybe "./test-cases/A1.txt" (L.headMaybe args)
   ls <- (T.strip <$>) . T.linesCR <$> readFileUtf8 path
-  runMainLoop $ mkAuditorium ls
+  finalAuditorium <- runMainLoop $ mkAuditorium ls
+  printSalesReport finalAuditorium
 
-runMainLoop :: Auditorium -> IO ()
+runMainLoop :: Auditorium -> IO Auditorium
 runMainLoop auditorium = do
   reserveOrExit <- promptFor1Or2 mainPrompt
   case reserveOrExit of
     1 -> do
       seats <- reserveSeats auditorium
       runMainLoop $ insertSeats auditorium seats
-    _ -> say "Thanks come again!"
+    _ -> do
+      say "Thanks come again!\n"
+      pure auditorium
 
 reserveSeats :: Auditorium -> IO [(RowCol, Seat)]
 reserveSeats auditorium = do
@@ -128,3 +132,18 @@ promptUntilValid parse prompt = do
     _ -> do
       say "Invalid input."
       promptUntilValid parse prompt
+
+printSalesReport :: Auditorium -> IO ()
+printSalesReport a = do
+  let map' = auditoriumMap a
+      soldTickets = filter (/= Unreserved) $ ticket <$> Map.elems map'
+      numOfAdultSold = L.length $ filter (== Adult) soldTickets
+      numOfChildSold = L.length $ filter (== Child) soldTickets
+      numOfSeniorSold = L.length $ filter (== Senior) soldTickets
+      totalTicketSales = sum $ toTicketPrice <$> soldTickets
+  say $ sformat ("Total seats        | " % int) $ Map.size map'
+  say $ sformat ("Total tickets sold | " % int) $ L.length soldTickets
+  say $ sformat ("Adult              | " % int) numOfAdultSold
+  say $ sformat ("Child              | " % int) numOfChildSold
+  say $ sformat ("Senior             | " % int) numOfSeniorSold
+  say $ sformat ("Total ticket sales | " % stext) $ fmtUSD totalTicketSales
