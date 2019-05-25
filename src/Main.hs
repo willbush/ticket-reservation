@@ -1,3 +1,4 @@
+{-# LANGUAGE MultiWayIf        #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -40,20 +41,13 @@ reserveSeats auditorium = do
   say $ mapToText auditorium
   tickets <- promptForTickets
   let purchaseTotal = sum $ toTicketPrice . toTicket <$> tickets
-  if null tickets
-    then do
-      say "No tickets purchased."
-      pure []
-    else do
-      let ticketCount = L.length tickets
-          map' = auditoriumMap auditorium
-          best = findBest ticketCount $ Map.toList map'
-      if null best
-        then do
-          say "Not enough seats available."
-          pure []
-        else do
-          purchasedSeats <- promptForSeats map' tickets best
+      ticketCount = L.length tickets
+      map' = auditoriumMap auditorium
+      best = findBest ticketCount $ Map.toList map'
+  if | null tickets -> say "No tickets purchased." >> pure []
+     | null best -> say "Not enough seats available." >> pure []
+     | otherwise ->
+       do purchasedSeats <- promptForSeats map' tickets best
           say "Purchase complete."
           say $ "Seats purchased: " <> fmtRowCols (fst <$> purchasedSeats)
           say $ "Purchase total: " <> fmtUSD purchaseTotal
