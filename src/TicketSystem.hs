@@ -143,8 +143,7 @@ findBest n seats = L.sortOn fst $
         $ fmap fst -- select just the best contiguous seats
         $ take 1 -- take the best
         -- | Sorting by the average distance then by row and column makes the
-        -- first element the best. It also has the effect of deterministics
-        -- distance tie breaking.
+        -- first element the best. It also has the effect of breaking distance ties.
         $ L.sortBy distanceThenRowCol
         -- | Transforms the list so that each contiguous seat list is in a tuple
         -- along with the average distance between all seats in its list.
