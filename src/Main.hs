@@ -21,7 +21,7 @@ main :: IO ()
 main = do
   args <- getArgs
   let path = fromMaybe "./test-cases/A1.txt" (L.headMaybe args)
-  ls <- (T.strip <$>) . T.linesCR <$> readFileUtf8 path
+  ls              <- (T.strip <$>) . T.linesCR <$> readFileUtf8 path
   finalAuditorium <- runMainLoop $ mkAuditorium ls
   printSalesReport finalAuditorium
 
@@ -58,64 +58,61 @@ promptForTickets = do
   numOfAdults   <- promptForGreaterOrEqToZero numOfAdultsPrompt
   numOfChildren <- promptForGreaterOrEqToZero numOfChildrenPrompt
   numOfSeniors  <- promptForGreaterOrEqToZero numOfSeniorsPrompt
-  pure $
-    L.replicate numOfAdults   'A' <>
-    L.replicate numOfChildren 'C' <>
-    L.replicate numOfSeniors  'S'
+  pure
+    $  L.replicate numOfAdults 'A'
+    <> L.replicate numOfChildren 'C'
+    <> L.replicate numOfSeniors 'S'
 
 promptForGreaterOrEqToZero :: Text -> IO Int
 promptForGreaterOrEqToZero = promptUntilValid parse
-  where
-    parse s =
-      case readMaybe s of
-        Just n | n >= 0 -> Just n
-        _               -> Nothing
+ where
+  parse s = case readMaybe s of
+    Just n | n >= 0 -> Just n
+    _               -> Nothing
 
-promptForSeats :: Map RowCol Seat -> String -> [(RowCol, Seat)] -> IO [(RowCol, Seat)]
+promptForSeats
+  :: Map RowCol Seat -> String -> [(RowCol, Seat)] -> IO [(RowCol, Seat)]
 promptForSeats map' tickets best = do
   let formattedBest = fmtRowCols $ fst <$> best
-      ticketCount = L.length tickets
+      ticketCount   = L.length tickets
   takeBestOrSelect <- promptFor1Or2 $ seatPrompt formattedBest
   case takeBestOrSelect of
-    1 ->
-      pure $
-      L.zipWith
-        (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
-        tickets
-        best
+    1 -> pure $ L.zipWith
+      (\t (rowCol, seat) -> (rowCol, seat { ticket = toTicket t }))
+      tickets
+      best
     _ -> do
-      selections <-
-        mapM (promptForSeat map' . seatSelectionPrompt) [1 .. ticketCount]
-      pure $
-        L.zipWith
-          (\t (rowCol, seat) -> (rowCol, seat {ticket = toTicket t}))
-          tickets $
-        mapMaybe
-          (\rowCol -> Map.lookup rowCol map' >>= (\seat -> Just (rowCol, seat)))
-          selections
+      selections <- mapM (promptForSeat map' . seatSelectionPrompt)
+                         [1 .. ticketCount]
+      pure
+        $ L.zipWith
+            (\t (rowCol, seat) -> (rowCol, seat { ticket = toTicket t }))
+            tickets
+        $ mapMaybe
+            (\rowCol ->
+              Map.lookup rowCol map' >>= (\seat -> Just (rowCol, seat))
+            )
+            selections
 
 promptForSeat :: Map RowCol Seat -> Text -> IO RowCol
 promptForSeat map' = promptUntilValid parse
-  where
-    parse [rowChar, col] =
-      case readMaybe [rowChar] of
-        Just row -> do
-          let rowCol = (row, upperCol)
-          case Map.lookup rowCol map' of
-            Just seat | isAvailable seat -> Just rowCol
-            _                            -> Nothing
-        _ -> Nothing
-      where
-        upperCol = C.toUpper col
-    parse _ = Nothing
+ where
+  parse [rowChar, col] = case readMaybe [rowChar] of
+    Just row -> do
+      let rowCol = (row, upperCol)
+      case Map.lookup rowCol map' of
+        Just seat | isAvailable seat -> Just rowCol
+        _                            -> Nothing
+    _ -> Nothing
+    where upperCol = C.toUpper col
+  parse _ = Nothing
 
 promptFor1Or2 :: Text -> IO Int
 promptFor1Or2 = promptUntilValid parse
-  where
-    parse s =
-      case readMaybe s of
-        Just n | n == 1 || n == 2 -> Just n
-        _                         -> Nothing
+ where
+  parse s = case readMaybe s of
+    Just n | n == 1 || n == 2 -> Just n
+    _                         -> Nothing
 
 promptUntilValid :: (String -> Maybe a) -> Text -> IO a
 promptUntilValid parse prompt = do
@@ -123,17 +120,17 @@ promptUntilValid parse prompt = do
   line <- getLine
   case parse line of
     Just v -> pure v
-    _ -> do
+    _      -> do
       say "Invalid input."
       promptUntilValid parse prompt
 
 printSalesReport :: Auditorium -> IO ()
 printSalesReport a = do
-  let map' = auditoriumMap a
-      soldTickets = filter (/= Unreserved) $ ticket <$> Map.elems map'
-      numOfAdultSold = L.length $ filter (== Adult) soldTickets
-      numOfChildSold = L.length $ filter (== Child) soldTickets
-      numOfSeniorSold = L.length $ filter (== Senior) soldTickets
+  let map'             = auditoriumMap a
+      soldTickets      = filter (/= Unreserved) $ ticket <$> Map.elems map'
+      numOfAdultSold   = L.length $ filter (== Adult) soldTickets
+      numOfChildSold   = L.length $ filter (== Child) soldTickets
+      numOfSeniorSold  = L.length $ filter (== Senior) soldTickets
       totalTicketSales = sum $ toTicketPrice <$> soldTickets
   say $ sformat ("Total seats        | " % int) $ Map.size map'
   say $ sformat ("Total tickets sold | " % int) $ L.length soldTickets
