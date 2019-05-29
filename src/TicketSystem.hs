@@ -1,5 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ViewPatterns      #-}
 
 module TicketSystem
   ( adultPrice
@@ -121,10 +122,8 @@ ticketToChar Unreserved = '.'
 ticketToChar _          = '#'
 
 getRowNumStr :: [(RowCol, Seat)] -> String
-getRowNumStr seats =
-  case L.headMaybe seats of
-    Just seat -> show ((fst . fst) seat) <> " "
-    Nothing   -> ""
+getRowNumStr (L.headMaybe -> Just seat) = show ((fst . fst) seat) <> " "
+getRowNumStr _                          = ""
 
 findBest :: Int -> [(RowCol, Seat)] -> [(RowCol, Seat)]
 findBest _ []    = []
