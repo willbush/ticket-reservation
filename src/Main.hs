@@ -1,6 +1,7 @@
 {-# LANGUAGE MultiWayIf        #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ViewPatterns      #-}
 
 module Main where
 
@@ -110,9 +111,8 @@ promptForSeat map' = promptUntilValid parse
 promptFor1Or2 :: Text -> IO Int
 promptFor1Or2 = promptUntilValid parse
  where
-  parse s = case readMaybe s of
-    Just n | n == 1 || n == 2 -> Just n
-    _                         -> Nothing
+  parse (readMaybe -> Just n) | n == 1 || n == 2 = Just n
+  parse _ = Nothing
 
 promptUntilValid :: (String -> Maybe a) -> Text -> IO a
 promptUntilValid parse prompt = do
