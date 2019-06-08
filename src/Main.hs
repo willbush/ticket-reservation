@@ -120,9 +120,7 @@ promptUntilValid parse prompt = do
   line <- getLine
   case parse line of
     Just v -> pure v
-    _      -> do
-      say "Invalid input."
-      promptUntilValid parse prompt
+    _      -> say "Invalid input." >> promptUntilValid parse prompt
 
 printSalesReport :: Auditorium -> IO ()
 printSalesReport a = do
