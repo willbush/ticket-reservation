@@ -18,6 +18,16 @@
       and all build dependencies should be loaded automatically.
    3. Run with ~cabal new-run tr-exe~
 
+** Development
+
+   I'm mostly writing this for my future self who lost his command history and
+   needs to figure out how to do this again. This is how I run ~ghcid~ with
+   tests:
+
+   #+begin_src shell
+   ghcid -c "cabal new-repl tr-test" -T=:main
+   #+end_src
+
 * Requirements
 
 ** Summary
