@@ -9,7 +9,7 @@
 
   The interesting part in doing this project is implementing the algorithm to
   find the best seats in the auditorium. It searches for available seats in the
-  entire auditorium closes to the center and prefers contiguous seats.
+  entire auditorium closest to the center and prefers contiguous seats.
 
 ** Building and Running
 
